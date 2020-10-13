@@ -1,0 +1,84 @@
+.pageOrphanagesMap {
+  width: 100vw;
+  height: 100vh;
+
+  position: relative;
+
+  display: flex;
+}
+
+.pageOrphanagesMap > aside {
+  width: 40rem;
+  padding: 5rem;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  background: linear-gradient(329.54deg, #29B6D1 0%, #00C7C7 100%);
+}
+
+.pageOrphanagesMap__mapMarker {
+  height: 5rem;
+}
+
+.pageOrphanagesMap__asideTitle {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 4.2rem;
+  margin-top: 6.4rem;
+}
+
+.pageOrphanagesMap__asideDescription {
+  line-height: 2.8rem;
+  margin-top: 2.4rem;
+}
+
+.pageOrphanagesMap__location {
+  font-size: 1.6rem;
+  line-height: 2rem;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.pageOrphanagesMap__city {
+  font-weight: 800;
+}
+
+.pageOrphanagesMap__state {
+  font-size: 1.45rem;
+}
+
+.pageOrphanagesMap__map {
+  z-index: 5;
+}
+
+.pageOrphanagesMap__createOrphanage {
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 2rem;
+
+  position: absolute;
+  z-index: 10;
+  bottom: 4rem;
+  right: 4rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: #15c3d6;
+  transition: background-color 0.2s;
+}
+
+.pageOrphanagesMap__createOrphanage:hover {
+  background-color: #17d6eb;
+}
+
+.pageOrphanagesMap__createOrphanage > .plusIcon {
+  width: 3.2rem;
+  height: 3.2rem;
+
+  color: #ffffff;
+}
