@@ -1,0 +1,197 @@
+.pageCreateOrphanage {
+  display: flex;
+}
+
+.pageCreateOrphanage > main {
+  flex: 1;
+}
+
+.pageCreateOrphanage__form {
+  width: 70rem;
+  margin: 6.4rem auto;
+  border: 1px solid #d3e2e5;
+  border-radius: 2rem;
+  padding: 6.4rem 8rem;
+
+  overflow: hidden;
+
+  background-color: #ffffff;
+}
+
+.pageCreateOrphanage__form > fieldset {
+  border: 0;
+}
+
+.pageCreateOrphanage__form > fieldset + fieldset {
+  margin-top: 8rem;
+}
+
+.pageCreateOrphanage__map {
+  margin-bottom: 4rem;
+  border: 1px solid #d3e2e5;
+  border-radius: 1rem;
+}
+
+.pageCreateOrphanage__form > fieldset > legend {
+  width: 100%;
+  border-bottom: 1px solid #d3e2e5;
+  margin-bottom: 4rem;
+  padding-bottom: 2.4rem;
+
+  font-size: 3.2rem;
+  line-height: 3.4rem;
+  font-weight: 700;
+  color: #5c8599;
+}
+
+.pageCreateOrphanage__inputBlock + .pageCreateOrphanage__inputBlock {
+  margin-top: 2.4rem;
+}
+
+.pageCreateOrphanage__inputBlock > label {
+  margin-bottom: 0.8rem;
+
+  display: block;
+
+  color: #8fa7b3;
+  line-height: 2.4rem;
+}
+
+.pageCreateOrphanage__inputBlock > label > span {
+  margin-left: 2.4rem;
+
+  font-size: 1.4rem;
+  color: #8fa7b3;
+  line-height: 2.4rem;
+}
+
+.pageCreateOrphanage__inputBlock input,
+.pageCreateOrphanage__inputBlock textarea {
+  width: 100%;
+  border: 1px solid #d3e2e5;
+  border-radius: 1rem;
+  outline: none;
+
+  color: #5c8599;
+
+  background-color: #f5f8fa;
+}
+
+.pageCreateOrphanage__inputBlock input {
+  height: 5.4rem;
+  padding: 0 1.6rem;
+
+  font-size: 1.65rem;
+}
+
+.pageCreateOrphanage__inputBlock input[type=file] {
+  display: none;
+}
+
+.pageCreateOrphanage__inputBlock textarea {
+  min-height: 12rem;
+  max-height: 24rem;
+  padding: 1.6rem;
+
+  font-size: 1.5rem;
+  line-height: 2.8rem;
+
+  resize: vertical;
+}
+
+.pageCreateOrphanage__imagesWrapper {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.pageCreateOrphanage__addNewImage {
+  width: 9rem;
+  height: 9rem;
+  margin: 0 auto;
+  border: 1px dashed #96d2f0;
+  border-radius: 1rem;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: #f5f8fa;
+}
+
+.pageCreateOrphanage__previewImage {
+  width: 9rem;
+  height: 9rem;
+  margin: 0 auto;
+  border: 1px dashed #96d2f0;
+  border-radius: 1rem;
+
+  object-fit: cover;
+
+  background-color: #f5f8fa;
+}
+
+.pageCreateOrphanage__addNewImage > .plusIcon {
+  color: #5c8599;
+  width: 3rem;
+  height: 3rem;
+}
+
+.pageCreateOrphanage__inputBlock .buttonSelectWrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.pageCreateOrphanage__inputBlock .buttonSelectWrapper > button {
+  height: 5.4rem;
+  border: 1px solid #d3e2e5;
+
+  color: #5c8599;
+
+  cursor: pointer;
+
+  background-color: #f5f8fa;
+}
+
+.pageCreateOrphanage__inputBlock .buttonSelectWrapper > button.active {
+  border: 1px solid #a1e9c5;
+
+  color: #37c77f;
+
+  background-color: #edfff6;
+}
+
+.pageCreateOrphanage__inputBlock .buttonSelectWrapper > button:first-child {
+  border-radius: 1rem 0 0 1rem;
+}
+
+.pageCreateOrphanage__inputBlock .buttonSelectWrapper > button:last-child {
+  border-radius: 0 1rem 1rem 0;
+  border-left: 0;
+}
+
+.pageCreateOrphanage__submit {
+  width: 100%;
+  height: 6.4rem;
+  margin-top: 6.4rem;
+  border: 0;
+  border-radius: 1rem;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+
+  color: #ffffff;
+  font-weight: 800;
+
+  transition: background-color 0.2s;
+
+  background-color: #3cdc8c;
+}
+
+.pageCreateOrphanage__submit:hover {
+  background-color: #36cf82;
+}
