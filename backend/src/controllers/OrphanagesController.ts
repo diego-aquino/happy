@@ -41,9 +41,10 @@ const OrphanagesController = {
       longitude,
       about,
       instructions,
-      opening_hours,
-      open_on_weekends
+      opening_hours
     } = request.body;
+
+    const open_on_weekends = request.body.open_on_weekends == 'true';
 
     const requestImages = request.files as Express.Multer.File[];
     const images = requestImages.map(image => {
