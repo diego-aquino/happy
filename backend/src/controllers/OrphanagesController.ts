@@ -40,6 +40,7 @@ const OrphanagesController = {
       latitude,
       longitude,
       about,
+      whatsapp,
       instructions,
       opening_hours
     } = request.body;
@@ -56,6 +57,7 @@ const OrphanagesController = {
       latitude,
       longitude,
       about,
+      whatsapp,
       instructions,
       opening_hours,
       open_on_weekends,
@@ -67,6 +69,7 @@ const OrphanagesController = {
       latitude: Yup.number().required(),
       longitude: Yup.number().required(),
       about: Yup.string().required().max(300),
+      whatsapp: Yup.string().required(),
       instructions: Yup.string().required(),
       opening_hours: Yup.string().required(),
       open_on_weekends: Yup.boolean().required(),

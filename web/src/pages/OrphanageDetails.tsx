@@ -14,6 +14,7 @@ import '../styles/pages/OrphanageDetails.css';
 interface Orphanage {
   name: string;
   about: string;
+  whatsapp: string;
   latitude: number;
   longitude: number;
   instructions: string;
@@ -29,6 +30,11 @@ interface RouteParams {
   id: string
 }
 
+/*
+TODO:
+- [] Improve form validation
+*/
+
 function OrphanageDetails() {
   const params = useParams<RouteParams>();
   const [orphanage, setOrphanage] = useState<Orphanage>();
@@ -39,6 +45,7 @@ function OrphanageDetails() {
       const {
         name,
         about,
+        whatsapp,
         latitude,
         longitude,
         instructions,
@@ -50,6 +57,7 @@ function OrphanageDetails() {
       setOrphanage({
         name,
         about,
+        whatsapp,
         latitude,
         longitude,
         instructions,
@@ -168,10 +176,15 @@ function OrphanageDetails() {
               )}
             </div>
 
-            <button type="button" className="pageOrphanageDetails__contact">
+            <a
+              className="pageOrphanageDetails__contact"
+              target="_blank"
+              rel="noopener noreferrer"
+              href={`https://api.whatsapp.com/send?1=pt_BR&phone=55${orphanage.whatsapp}`}
+            >
               <FaWhatsapp className="whatsappIcon" />
               Entrar em contato
-            </button>
+            </a>
           </div>
         </div>
       </main>

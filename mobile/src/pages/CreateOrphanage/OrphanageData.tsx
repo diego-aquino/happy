@@ -29,9 +29,10 @@ function OrphanageData() {
 
   const [name, setName] = useState('');
   const [about, setAbout] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
   const [instructions, setInstructions] = useState('');
   const [openingHours, setOpeningHours] = useState('');
-  const [openOnWeekeds, setOpenOnWeekends] = useState(true);
+  const [openOnWeekends, setOpenOnWeekends] = useState(true);
   const [images, setImages] = useState<string[]>([]);
 
   const handleSelectImages = async () => {
@@ -64,11 +65,12 @@ function OrphanageData() {
 
     data.append('name', name);
     data.append('about', about);
+    data.append('whatsapp', whatsapp);
     data.append('latitude', String(latitude));
     data.append('longitude', String(longitude));
     data.append('instructions', instructions);
     data.append('opening_hours', openingHours);
-    data.append('open_on_weekends', String(openOnWeekeds));
+    data.append('open_on_weekends', String(openOnWeekends));
 
     images.forEach((image, index) => {
       data.append('images', {
@@ -106,8 +108,12 @@ function OrphanageData() {
         onChangeText={text => setAbout(text)}
       />
 
-      {/* <Text style={styles.label}>Whatsapp</Text>
-      <TextInput style={styles.input} /> */}
+      <Text style={styles.label}>Whatsapp</Text>
+      <TextInput
+        style={styles.input}
+        value={whatsapp}
+        onChangeText={text => setWhatsapp(text)}
+      />
 
       <Text style={styles.label}>Fotos</Text>
       <View style={styles.uploadedImagesContainer}>
@@ -148,7 +154,7 @@ function OrphanageData() {
         <Switch
           thumbColor="#ffffff"
           trackColor={{ false: '#cccccc', true: '#39cc83' }}
-          value={openOnWeekeds}
+          value={openOnWeekends}
           onValueChange={value => setOpenOnWeekends(value)}
         />
       </View>
