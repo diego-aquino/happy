@@ -35,6 +35,10 @@ export class createOrphanages1602598299173 implements MigrationInterface {
             type: 'text'
           },
           {
+            name: 'whatsapp',
+            type: 'varchar'
+          },
+          {
             name: 'instructions',
             type: 'text'
           },
