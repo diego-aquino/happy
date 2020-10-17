@@ -13,6 +13,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 
 import api from '../../services/api';
+import {
+  validate,
+  ValidationField,
+} from '../../utils/validation/OrphanageDataValidation';
 import { OrphanageDataStyles as styles } from '../../styles';
 
 interface OrphanageDataRouteParams {
@@ -21,6 +25,15 @@ interface OrphanageDataRouteParams {
     longitude: number,
   };
 }
+
+type ValidationStatus = {
+  valid: boolean;
+  errorMessage?: string;
+};
+
+type Validation = {
+  [key in ValidationField]: ValidationStatus;
+};
 
 function OrphanageData() {
   const navigation = useNavigation();
@@ -34,6 +47,40 @@ function OrphanageData() {
   const [openingHours, setOpeningHours] = useState('');
   const [openOnWeekends, setOpenOnWeekends] = useState(true);
   const [images, setImages] = useState<string[]>([]);
+
+  const [validation, setValidation] = useState<Validation>({
+    name: { valid: true },
+    about: { valid: true },
+    whatsapp: { valid: true },
+    instructions: { valid: true },
+    openingHours: { valid: true },
+    images: { valid: true },
+  });
+  const [validSubmit, setValidSubmit] = useState(true);
+
+  const setValidationStatus = (
+    field: ValidationField,
+    validationStatus: ValidationStatus,
+  ) => {
+    setValidation(previousValidation => {
+      const updatedValidation = {
+        ...previousValidation,
+        [field]: validationStatus,
+      };
+
+      return updatedValidation;
+    });
+  };
+
+  const handleBlur = async (field: ValidationField, fieldValue: string) => {
+    const validationStatus = await validate(field, fieldValue);
+
+    setValidationStatus(field, validationStatus);
+
+    if (!validSubmit) {
+      setValidSubmit(true);
+    }
+  };
 
   const handleSelectImages = async () => {
     const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
@@ -56,34 +103,104 @@ function OrphanageData() {
     const { uri: image } = result;
 
     setImages([...images, image]);
+
+    setValidationStatus('images', { valid: true });
+  };
+
+  const everyFieldIsValid = () => Boolean(
+    name && validation.name.valid
+      && about && validation.about.valid
+      && whatsapp && validation.whatsapp.valid
+      && instructions && validation.instructions.valid
+      && openingHours && validation.openingHours.valid
+      && images.length > 0 && validation.images.valid,
+  );
+
+  const assessFieldsValidity = () => {
+    if (!everyFieldIsValid()) {
+      setValidSubmit(false);
+
+      if (!name) {
+        setValidationStatus('name', {
+          valid: false,
+          errorMessage: 'Este é um campo obrigatório',
+        });
+      }
+
+      if (!about) {
+        setValidationStatus('about', {
+          valid: false,
+          errorMessage: 'Este é um campo obrigatório',
+        });
+      }
+
+      if (!whatsapp) {
+        setValidationStatus('whatsapp', {
+          valid: false,
+          errorMessage: 'Este é um campo obrigatório',
+        });
+      }
+
+      if (!instructions) {
+        setValidationStatus('instructions', {
+          valid: false,
+          errorMessage: 'Este é um campo obrigatório',
+        });
+      }
+
+      if (!openingHours) {
+        setValidationStatus('openingHours', {
+          valid: false,
+          errorMessage: 'Este é um campo obrigatório',
+        });
+      }
+
+      if (images.length === 0) {
+        setValidationStatus('images', {
+          valid: false,
+          errorMessage: 'Envie pelo menos uma imagem para facilitar a identificação',
+        });
+      }
+
+      return false;
+    }
+
+    return true;
   };
 
   const handleCreateOrphanage = async () => {
-    const { latitude, longitude } = position;
+    setTimeout(async () => {
+      const readyToSubmit = assessFieldsValidity();
+      if (!readyToSubmit) {
+        return;
+      }
 
-    const data = new FormData();
+      const { latitude, longitude } = position;
 
-    data.append('name', name);
-    data.append('about', about);
-    data.append('whatsapp', whatsapp);
-    data.append('latitude', String(latitude));
-    data.append('longitude', String(longitude));
-    data.append('instructions', instructions);
-    data.append('opening_hours', openingHours);
-    data.append('open_on_weekends', String(openOnWeekends));
+      const data = new FormData();
 
-    images.forEach((image, index) => {
-      data.append('images', {
-        name: `image_${index}.jpg`,
-        type: 'image/jpg',
-        uri: image,
-      } as any);
-    });
+      data.append('name', name);
+      data.append('about', about);
+      data.append('whatsapp', whatsapp);
+      data.append('latitude', String(latitude));
+      data.append('longitude', String(longitude));
+      data.append('instructions', instructions);
+      data.append('opening_hours', openingHours);
+      data.append('open_on_weekends', String(openOnWeekends));
 
-    await api.post('/orphanages', data);
+      images.forEach((image, index) => {
+        data.append('images', {
+          name: `image_${index}.jpg`,
+          type: 'image/jpg',
+          uri: image,
+        } as any);
+      });
 
-    alert('Cadastro realizado com sucesso!');
-    navigation.navigate('OrphanagesMap');
+      await api.post('/orphanages', data);
+
+      alert('Cadastro realizado com sucesso!');
+      navigation.navigate('OrphanagesMap');
+    }, 500);
   };
 
   return (
@@ -93,29 +210,92 @@ function OrphanageData() {
     >
       <Text style={styles.title}>Dados</Text>
 
-      <Text style={styles.label}>Nome</Text>
+      <View style={styles.label}>
+        <Text style={styles.labelText}>Nome</Text>
+
+        {!validation.name.valid && (
+          <View style={styles.validationError}>
+            <Feather
+              name="info"
+              size={18}
+              color="#ff667a"
+            />
+            <Text style={styles.validationErrorText}>
+              {validation.name.errorMessage}
+            </Text>
+          </View>
+        )}
+      </View>
       <TextInput
         style={styles.input}
         value={name}
         onChangeText={text => setName(text)}
+        onBlur={() => handleBlur('name', name)}
       />
 
-      <Text style={styles.label}>Sobre</Text>
+      <View style={styles.label}>
+        <Text style={styles.labelText}>Sobre</Text>
+
+        {!validation.about.valid && (
+          <View style={styles.validationError}>
+            <Feather
+              name="info"
+              size={18}
+              color="#ff667a"
+            />
+            <Text style={styles.validationErrorText}>
+              {validation.about.errorMessage}
+            </Text>
+          </View>
+        )}
+      </View>
       <TextInput
         style={[styles.input, { height: 110 }]}
         multiline
         value={about}
         onChangeText={text => setAbout(text)}
+        onBlur={() => handleBlur('about', about)}
       />
 
-      <Text style={styles.label}>Whatsapp</Text>
+      <View style={styles.label}>
+        <Text style={styles.labelText}>Whatsapp</Text>
+
+        {!validation.whatsapp.valid && (
+          <View style={styles.validationError}>
+            <Feather
+              name="info"
+              size={18}
+              color="#ff667a"
+            />
+            <Text style={styles.validationErrorText}>
+              {validation.whatsapp.errorMessage}
+            </Text>
+          </View>
+        )}
+      </View>
       <TextInput
         style={styles.input}
         value={whatsapp}
         onChangeText={text => setWhatsapp(text)}
+        onBlur={() => handleBlur('whatsapp', whatsapp)}
       />
 
-      <Text style={styles.label}>Fotos</Text>
+      <View style={styles.label}>
+        <Text style={styles.labelText}>Fotos</Text>
+
+        {!validation.images.valid && (
+          <View style={styles.validationError}>
+            <Feather
+              name="info"
+              size={18}
+              color="#ff667a"
+            />
+            <Text style={styles.validationErrorText}>
+              {validation.images.errorMessage}
+            </Text>
+          </View>
+        )}
+      </View>
       <View style={styles.uploadedImagesContainer}>
         {images.map(image => (
           <Image
@@ -134,23 +314,55 @@ function OrphanageData() {
 
       <Text style={styles.title}>Visitação</Text>
 
-      <Text style={styles.label}>Instruções</Text>
+      <View style={styles.label}>
+        <Text style={styles.labelText}>Instruções</Text>
+
+        {!validation.instructions.valid && (
+          <View style={styles.validationError}>
+            <Feather
+              name="info"
+              size={18}
+              color="#ff667a"
+            />
+            <Text style={styles.validationErrorText}>
+              {validation.instructions.errorMessage}
+            </Text>
+          </View>
+        )}
+      </View>
       <TextInput
         style={[styles.input, { height: 110 }]}
         multiline
         value={instructions}
         onChangeText={text => setInstructions(text)}
+        onBlur={() => handleBlur('instructions', instructions)}
       />
 
-      <Text style={styles.label}>Horário de visitas</Text>
+      <View style={styles.label}>
+        <Text style={styles.labelText}>Horário de Visitação</Text>
+
+        {!validation.openingHours.valid && (
+          <View style={styles.validationError}>
+            <Feather
+              name="info"
+              size={18}
+              color="#ff667a"
+            />
+            <Text style={styles.validationErrorText}>
+              {validation.openingHours.errorMessage}
+            </Text>
+          </View>
+        )}
+      </View>
       <TextInput
         style={styles.input}
         value={openingHours}
         onChangeText={text => setOpeningHours(text)}
+        onBlur={() => handleBlur('openingHours', openingHours)}
       />
 
       <View style={styles.switchContainer}>
-        <Text style={styles.label}>Atende em fins de semana</Text>
+        <Text style={styles.labelText}>Atende em fins de semana</Text>
         <Switch
           thumbColor="#ffffff"
           trackColor={{ false: '#cccccc', true: '#39cc83' }}
@@ -158,6 +370,19 @@ function OrphanageData() {
           onValueChange={value => setOpenOnWeekends(value)}
         />
       </View>
+
+      {!validSubmit && (
+        <View style={styles.validationErrorForm}>
+          <Feather
+            name="info"
+            size={19}
+            color="#ff667a"
+          />
+          <Text style={styles.validationErrorFormText}>
+            Oops! Verifique os dados preenchidos e tente novamente
+          </Text>
+        </View>
+      )}
 
       <RectButton style={styles.submitButton} onPress={handleCreateOrphanage}>
         <Text style={styles.submitButtonText}>Cadastrar</Text>
