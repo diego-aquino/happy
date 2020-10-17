@@ -21,11 +21,13 @@
     "react-leaflet": "^2.7.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
-    "typescript": "~3.7.2"
+    "typescript": "~3.7.2",
+    "yup": "^0.29.3"
   },
   "devDependencies": {
     "@types/react-leaflet": "^2.5.2",
     "@types/react-router-dom": "^5.1.6",
+    "@types/yup": "^0.29.8",
     "@typescript-eslint/parser": "^4.4.1",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jsx-a11y": "^6.3.1"

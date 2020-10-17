@@ -51,18 +51,60 @@
 .pageCreateOrphanage__inputBlock > label {
   margin-bottom: 0.8rem;
 
-  display: block;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
   color: #8fa7b3;
   line-height: 2.4rem;
 }
 
-.pageCreateOrphanage__inputBlock > label > span {
+.pageCreateOrphanage__inputBlock > label > span,
+.pageCreateOrphanage__inputBlock > label > .labelBlock > span {
   margin-left: 2.4rem;
 
   font-size: 1.4rem;
   color: #8fa7b3;
   line-height: 2.4rem;
+}
+
+/* #ff669d */
+/* #ffbcd4 */
+
+.pageCreateOrphanage .validationError {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  color: #ff667a;
+  font-size: 1.45rem;
+  font-weight: 500;
+}
+
+.pageCreateOrphanage .validationError--map {
+  padding-bottom: 1.8rem;
+}
+
+.pageCreateOrphanage .validationError--form {
+  margin: 5rem 0 -3rem;
+  justify-content: flex-start;
+
+  font-size: 1.65rem;
+  font-weight: 800;
+}
+
+.pageCreateOrphanage .validationError > .infoIcon {
+  width: 2.1rem;
+  height: 2.1rem;
+  margin-right: 0.5rem;
+
+  color: #ff667a;
+}
+
+.pageCreateOrphanage .validationError--form > .infoIcon {
+  width: 2.8rem;
+  height: 2.8rem;
+  margin-right: 0.75rem;
 }
 
 .pageCreateOrphanage__inputBlock input,

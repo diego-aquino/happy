@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
@@ -19,8 +19,15 @@ const styles = StyleSheet.create({
   label: {
     marginBottom: 8,
 
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  labelText: {
     color: '#8fa7b3',
     fontFamily: 'Nunito_600SemiBold',
+    textAlign: 'right',
   },
 
   comment: {
@@ -39,6 +46,45 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
 
     backgroundColor: '#ffffff',
+  },
+
+  validationError: {
+    paddingLeft: 50,
+    marginRight: 7,
+
+    flex: 1,
+
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+
+    textAlign: 'right',
+  },
+
+  validationErrorText: {
+    marginLeft: 4,
+
+    color: '#ff667a',
+    fontFamily: 'Nunito_600SemiBold',
+  },
+
+  validationErrorForm: {
+    marginTop: 30,
+
+    width: '90%',
+    marginHorizontal: 10,
+
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+
+    textAlign: 'left',
+  },
+
+  validationErrorFormText: {
+    marginLeft: 4,
+
+    color: '#ff667a',
+    fontSize: 16,
+    fontFamily: 'Nunito_600SemiBold',
   },
 
   imagesInput: {
