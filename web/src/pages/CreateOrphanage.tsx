@@ -4,9 +4,13 @@ import React, { ChangeEvent, FormEvent, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Map, Marker, TileLayer } from 'react-leaflet';
 import { LeafletMouseEvent } from 'leaflet';
-import { FiPlus } from 'react-icons/fi';
+import { FiPlus, FiInfo } from 'react-icons/fi';
 
 import api from '../services/api';
+import {
+  validate,
+  ValidationField
+} from '../utils/validation/CreateOrphanageValidation';
 import Sidebar from '../components/Sidebar';
 import mapMarker from '../resources/mapMarker';
 import '../styles/pages/CreateOrphanage.css';
@@ -17,6 +21,15 @@ TODO:
 - [] Store WhatsApp number
 - [] Make openOnWeekends a toggle component
 */
+
+type ValidationStatus = {
+  valid: boolean;
+  errorMessage?: string;
+};
+
+type Validation = {
+  [key in ValidationField]: ValidationStatus;
+};
 
 function CreateOrphanage() {
   const history = useHistory();
@@ -32,13 +45,123 @@ function CreateOrphanage() {
   const [images, setImages] = useState<File[]>([]);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
 
+  const [validation, setValidation] = useState<Validation>({
+    name: { valid: true },
+    about: { valid: true },
+    whatsapp: { valid: true },
+    instructions: { valid: true },
+    openingHours: { valid: true },
+    position: { valid: true },
+    images: { valid: true }
+  });
+  const [validSubmit, setValidSubmit] = useState(true);
+
+  const setValidationStatus = (
+    field: ValidationField,
+    validationStatus: ValidationStatus
+  ) => {
+    setValidation(previousValidation => {
+      const updatedValidation = {
+        ...previousValidation,
+        [field]: validationStatus
+      };
+
+      return updatedValidation;
+    });
+  };
+
   const handleMapClick = (event: LeafletMouseEvent) => {
     const { lat, lng } = event.latlng;
+
     setPosition({ latitude: lat, longitude: lng });
+    setValidationStatus('position', { valid: true });
+  };
+
+  const handleBlur = async (field: ValidationField, fieldValue: string) => {
+    const validationStatus = await validate(field, fieldValue);
+
+    setValidationStatus(field, validationStatus);
+
+    if (!validSubmit) {
+      setValidSubmit(true);
+    }
+  };
+
+  const everyFieldIsValid = () => Boolean(
+    name && validation.name.valid
+      && about && validation.about.valid
+      && whatsapp && validation.whatsapp.valid
+      && instructions && validation.instructions.valid
+      && openingHours && validation.openingHours.valid
+      && images.length > 0 && validation.images.valid
+  );
+
+  const assessFieldsValidity = () => {
+    if (!everyFieldIsValid()) {
+      setValidSubmit(false);
+
+      if (!name) {
+        setValidationStatus('name', {
+          valid: false,
+          errorMessage: 'Este é um campo obrigatório'
+        });
+      }
+
+      if (!about) {
+        setValidationStatus('about', {
+          valid: false,
+          errorMessage: 'Este é um campo obrigatório'
+        });
+      }
+
+      if (!whatsapp) {
+        setValidationStatus('whatsapp', {
+          valid: false,
+          errorMessage: 'Este é um campo obrigatório'
+        });
+      }
+
+      if (!instructions) {
+        setValidationStatus('instructions', {
+          valid: false,
+          errorMessage: 'Este é um campo obrigatório'
+        });
+      }
+
+      if (!openingHours) {
+        setValidationStatus('openingHours', {
+          valid: false,
+          errorMessage: 'Este é um campo obrigatório'
+        });
+      }
+
+      if (position.latitude === 0 && position.longitude === 0) {
+        setValidationStatus('position', {
+          valid: false,
+          errorMessage: 'Selecione a localização do orfanato no mapa'
+        });
+      }
+
+      if (images.length === 0) {
+        setValidationStatus('images', {
+          valid: false,
+          errorMessage: 'Envie pelo menos uma imagem para facilitar a identificação'
+        });
+      }
+
+      return false;
+    }
+
+    return true;
   };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+
+    const readyToSubmit = assessFieldsValidity();
+    if (!readyToSubmit) {
+      return;
+    }
 
     const { latitude, longitude } = position;
 
@@ -73,6 +196,8 @@ function CreateOrphanage() {
 
     const selectedPreviewImages = selectedImages.map(image => URL.createObjectURL(image));
     setPreviewImages(selectedPreviewImages);
+
+    setValidationStatus('images', { valid: true });
   };
 
   return (
@@ -84,6 +209,12 @@ function CreateOrphanage() {
           <fieldset>
             <legend>Dados</legend>
 
+            {!validation.position.valid && (
+              <span className="validationError validationError--map">
+                <FiInfo className="infoIcon" />
+                {validation.position.errorMessage}
+              </span>
+            )}
             <Map
               center={[-7.2199515, -35.9261013]}
               zoom={15}
@@ -105,20 +236,38 @@ function CreateOrphanage() {
             </Map>
 
             <div className="pageCreateOrphanage__inputBlock">
-              <label htmlFor="name">Nome</label>
+              <label htmlFor="name">
+                Nome
+
+                {!validation.name.valid && (
+                  <span className="validationError">
+                    <FiInfo className="infoIcon" />
+                    {validation.name.errorMessage}
+                  </span>
+                )}
+              </label>
               <input
                 type="text"
                 id="name"
                 value={name}
                 onChange={e => { setName(e.target.value); }}
+                onBlur={() => { handleBlur('name', name); }}
               />
             </div>
 
             <div className="pageCreateOrphanage__inputBlock">
               <label htmlFor="about">
-                Sobre
-                {' '}
-                <span>Máximo de 300 caracteres</span>
+                <div className="labelBlock">
+                  Sobre
+                  <span>Máximo de 300 caracteres</span>
+                </div>
+
+                {!validation.about.valid && (
+                  <span className="validationError">
+                    <FiInfo className="infoIcon" />
+                    {validation.about.errorMessage}
+                  </span>
+                )}
               </label>
               <textarea
                 name="about"
@@ -126,21 +275,41 @@ function CreateOrphanage() {
                 maxLength={300}
                 value={about}
                 onChange={e => { setAbout(e.target.value); }}
+                onBlur={() => { handleBlur('about', about); }}
               />
             </div>
 
             <div className="pageCreateOrphanage__inputBlock">
-              <label htmlFor="name">Número de Whatsapp</label>
+              <label htmlFor="name">
+                Número de Whatsapp
+
+                {!validation.whatsapp.valid && (
+                  <span className="validationError">
+                    <FiInfo className="infoIcon" />
+                    {validation.whatsapp.errorMessage}
+                  </span>
+                )}
+              </label>
               <input
                 type="text"
                 id="whatsapp"
                 value={whatsapp}
                 onChange={e => { setWhatsapp(e.target.value); }}
+                onBlur={() => { handleBlur('whatsapp', whatsapp); }}
               />
             </div>
 
             <div className="pageCreateOrphanage__inputBlock">
-              <label htmlFor="images">Fotos</label>
+              <label htmlFor="images">
+                Fotos
+
+                {!validation.images.valid && (
+                  <span className="validationError">
+                    <FiInfo className="infoIcon" />
+                    {validation.images.errorMessage}
+                  </span>
+                )}
+              </label>
 
               <div className="pageCreateOrphanage__imagesWrapper">
                 {previewImages.map(imagePreview => (
@@ -158,7 +327,6 @@ function CreateOrphanage() {
                 >
                   <FiPlus className="plusIcon" />
                 </label>
-
               </div>
 
               <input
@@ -174,22 +342,42 @@ function CreateOrphanage() {
             <legend>Visitação</legend>
 
             <div className="pageCreateOrphanage__inputBlock">
-              <label htmlFor="instructions">Intruções de Visita</label>
+              <label htmlFor="instructions">
+                Intruções de Visita
+
+                {!validation.instructions.valid && (
+                  <span className="validationError">
+                    <FiInfo className="infoIcon" />
+                    {validation.instructions.errorMessage}
+                  </span>
+                )}
+              </label>
               <textarea
                 name="instructions"
                 id="instructions"
                 value={instructions}
                 onChange={e => { setInstructions(e.target.value); }}
+                onBlur={() => { handleBlur('instructions', instructions); }}
               />
             </div>
 
             <div className="pageCreateOrphanage__inputBlock">
-              <label htmlFor="openingHours">Horário de Funcionamento</label>
+              <label htmlFor="openingHours">
+                Horário de Funcionamento
+
+                {!validation.openingHours.valid && (
+                  <span className="validationError">
+                    <FiInfo className="infoIcon" />
+                    {validation.openingHours.errorMessage}
+                  </span>
+                )}
+              </label>
               <input
                 name="opening_hours"
                 id="openingHours"
                 value={openingHours}
                 onChange={e => { setOpeningHours(e.target.value); }}
+                onBlur={() => { handleBlur('openingHours', openingHours); }}
               />
             </div>
 
@@ -213,6 +401,13 @@ function CreateOrphanage() {
               </div>
             </div>
           </fieldset>
+
+          {!validSubmit && (
+            <span className="validationError validationError--form">
+              <FiInfo className="infoIcon" />
+              Oops! Verifique os dados preenchidos e tente novamente
+            </span>
+          )}
 
           <button
             type="submit"
