@@ -94,6 +94,7 @@ function CreateOrphanage() {
       && whatsapp && validation.whatsapp.valid
       && instructions && validation.instructions.valid
       && openingHours && validation.openingHours.valid
+      && position.latitude !== 0 && position.longitude !== 0
       && images.length > 0 && validation.images.valid
   );
 
@@ -182,9 +183,7 @@ function CreateOrphanage() {
 
     await api.post('orphanages', data);
 
-    alert('Cadastro realizado com sucesso!');
-
-    history.push('/app');
+    history.push('/orphanages/create/success', { orphanageCreated: true });
   };
 
   const handleSelectedImages = (event: ChangeEvent<HTMLInputElement>) => {
