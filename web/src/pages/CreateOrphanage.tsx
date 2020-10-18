@@ -14,6 +14,7 @@ import {
 import Sidebar from '../components/Sidebar';
 import mapMarker from '../resources/mapMarker';
 import '../styles/pages/CreateOrphanage.css';
+import TextButton from '../components/TextButton';
 
 /*
 TODO:
@@ -409,12 +410,13 @@ function CreateOrphanage() {
             </span>
           )}
 
-          <button
+          <TextButton
+            color="green"
             type="submit"
             className="pageCreateOrphanage__submit"
           >
             Confirmar
-          </button>
+          </TextButton>
         </form>
       </main>
     </div>

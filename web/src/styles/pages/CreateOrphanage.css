@@ -214,26 +214,5 @@
 }
 
 .pageCreateOrphanage__submit {
-  width: 100%;
-  height: 6.4rem;
   margin-top: 6.4rem;
-  border: 0;
-  border-radius: 1rem;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  cursor: pointer;
-
-  color: #ffffff;
-  font-weight: 800;
-
-  transition: background-color 0.2s;
-
-  background-color: #3cdc8c;
-}
-
-.pageCreateOrphanage__submit:hover {
-  background-color: #36cf82;
 }
