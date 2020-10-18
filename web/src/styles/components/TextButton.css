@@ -1,0 +1,41 @@
+.textButton {
+  width: 100%;
+  height: 6.4rem;
+  border: 0;
+  border-radius: 1rem;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+
+  color: #ffffff;
+  font-weight: 800;
+
+  transition: background-color 0.2s;
+}
+
+.textButton--green {
+  background-color: #3cdc8c;
+}
+
+.textButton--green:hover {
+  background-color: #29c276;
+}
+
+.textButton--green-dark {
+  background-color: #31B272;
+}
+
+.textButton--green-dark:hover {
+  background-color: #3BD689;
+}
+
+.textButton--red {
+  background-color: #FF669D;
+}
+
+.textButton--red:hover {
+  background-color: #ec518a;
+}
