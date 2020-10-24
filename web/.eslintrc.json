@@ -14,9 +14,11 @@
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaFeatures": {
-      "jsx": true
+      "jsx": true,
+      "tsx": true,
+      "ts": true
     },
-    "ecmaVersion": 2018,
+    "ecmaVersion": 2020,
     "sourceType": "module"
   },
   "plugins": [
@@ -58,24 +60,14 @@
         "ignoreComments": true
       }
     ],
-    "comma-dangle": ["warn", "never"],
+    "comma-dangle": ["warn", "always-multiline"],
     "object-curly-newline": [
       "error",
       {
-        "ObjectExpression": {
-          "multiline": true
-        },
-        "ObjectPattern": {
-          "multiline": true,
-          "minProperties": 6
-        },
-        "ImportDeclaration": {
-          "multiline": true
-        },
-        "ExportDeclaration": {
-          "multiline": true,
-          "minProperties": 6
-        }
+        "ObjectExpression": { "multiline": true },
+        "ObjectPattern": { "multiline": true },
+        "ImportDeclaration": { "multiline": true },
+        "ExportDeclaration": { "multiline": true }
       }
     ],
     "no-unused-vars": [
