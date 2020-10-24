@@ -5,11 +5,16 @@ import MapView, { MapEvent, Marker } from 'react-native-maps';
 
 import { RectButton } from 'react-native-gesture-handler';
 import mapMarker from '../../images/map-marker.png';
+import { Position } from '../../types';
+
 import { SelectMapPositionStyles as styles } from '../../styles';
 
 function SelectMapPosition() {
   const navigation = useNavigation();
-  const [position, setPosition] = useState({ latitude: 0, longitude: 0 });
+  const [position, setPosition] = useState<Position>({
+    latitude: 0,
+    longitude: 0,
+  });
 
   const handleSelectMapPosition = (event: MapEvent) => {
     setPosition(event.nativeEvent.coordinate);

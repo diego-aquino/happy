@@ -13,10 +13,14 @@ import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 
 import api from '../../services/api';
+
+import { validateCreateOrphanage as validate } from '../../utils/validation';
 import {
-  validate,
-  ValidationField,
-} from '../../utils/validation/OrphanageDataValidation';
+  FieldToValidate,
+  FieldValue,
+} from '../../utils/validation/CreateOrphanage/types';
+import { ValidationStatus } from '../../utils/validation/types';
+
 import { OrphanageDataStyles as styles } from '../../styles';
 
 interface OrphanageDataRouteParams {
@@ -26,13 +30,13 @@ interface OrphanageDataRouteParams {
   };
 }
 
-type ValidationStatus = {
-  valid: boolean;
-  errorMessage?: string;
-};
+type GroupedFields = Array<{
+  field: FieldToValidate;
+  fieldValue: FieldValue;
+}>
 
 type Validation = {
-  [key in ValidationField]: ValidationStatus;
+  [key in FieldToValidate]: ValidationStatus;
 };
 
 function OrphanageData() {
@@ -54,12 +58,13 @@ function OrphanageData() {
     whatsapp: { valid: true },
     instructions: { valid: true },
     openingHours: { valid: true },
+    position: { valid: true },
     images: { valid: true },
   });
   const [validSubmit, setValidSubmit] = useState(true);
 
   const setValidationStatus = (
-    field: ValidationField,
+    field: FieldToValidate,
     validationStatus: ValidationStatus,
   ) => {
     setValidation(previousValidation => {
@@ -70,16 +75,6 @@ function OrphanageData() {
 
       return updatedValidation;
     });
-  };
-
-  const handleBlur = async (field: ValidationField, fieldValue: string) => {
-    const validationStatus = await validate(field, fieldValue);
-
-    setValidationStatus(field, validationStatus);
-
-    if (!validSubmit) {
-      setValidSubmit(true);
-    }
   };
 
   const handleSelectImages = async () => {
@@ -102,105 +97,112 @@ function OrphanageData() {
 
     const { uri: image } = result;
 
-    setImages([...images, image]);
+    setImages(previousImages => [...previousImages, image]);
 
     setValidationStatus('images', { valid: true });
   };
 
-  const everyFieldIsValid = () => Boolean(
-    name && validation.name.valid
-      && about && validation.about.valid
-      && whatsapp && validation.whatsapp.valid
-      && instructions && validation.instructions.valid
-      && openingHours && validation.openingHours.valid
-      && images.length > 0 && validation.images.valid,
-  );
+  const assessFieldValidity = async (
+    field: FieldToValidate,
+    fieldValue: FieldValue,
+    options?: { preparingToSubmit: boolean },
+  ) => {
+    const validationStatus = await validate(field, fieldValue);
 
-  const assessFieldsValidity = () => {
-    if (!everyFieldIsValid()) {
+    setValidationStatus(field, validationStatus);
+
+    if (options?.preparingToSubmit && !validationStatus.valid) {
       setValidSubmit(false);
-
-      if (!name) {
-        setValidationStatus('name', {
-          valid: false,
-          errorMessage: 'Este é um campo obrigatório',
-        });
-      }
-
-      if (!about) {
-        setValidationStatus('about', {
-          valid: false,
-          errorMessage: 'Este é um campo obrigatório',
-        });
-      }
-
-      if (!whatsapp) {
-        setValidationStatus('whatsapp', {
-          valid: false,
-          errorMessage: 'Este é um campo obrigatório',
-        });
-      }
-
-      if (!instructions) {
-        setValidationStatus('instructions', {
-          valid: false,
-          errorMessage: 'Este é um campo obrigatório',
-        });
-      }
-
-      if (!openingHours) {
-        setValidationStatus('openingHours', {
-          valid: false,
-          errorMessage: 'Este é um campo obrigatório',
-        });
-      }
-
-      if (images.length === 0) {
-        setValidationStatus('images', {
-          valid: false,
-          errorMessage: 'Envie pelo menos uma imagem para facilitar a identificação',
-        });
-      }
-
-      return false;
     }
 
-    return true;
+    return { validField: validationStatus.valid };
+  };
+
+  const handleFieldChange = (field: FieldToValidate) => {
+    setValidationStatus(field, { valid: true });
+
+    if (!validSubmit) {
+      setValidSubmit(true);
+    }
+  };
+
+  const handleBlur = (field: FieldToValidate, fieldValue: FieldValue) => {
+    assessFieldValidity(field, fieldValue);
+  };
+
+  const assessValidityOfAllFields = async () => {
+    const fields: GroupedFields = [
+      {
+        field: 'name',
+        fieldValue: name,
+      },
+      {
+        field: 'about',
+        fieldValue: about,
+      },
+      {
+        field: 'whatsapp',
+        fieldValue: whatsapp,
+      },
+      {
+        field: 'instructions',
+        fieldValue: instructions,
+      },
+      {
+        field: 'openingHours',
+        fieldValue: openingHours,
+      },
+      {
+        field: 'position',
+        fieldValue: position,
+      },
+      {
+        field: 'images',
+        fieldValue: images,
+      },
+    ];
+
+    const validityChecksPromises = fields.map(({ field, fieldValue }) => (
+      assessFieldValidity(field, fieldValue, { preparingToSubmit: true })
+    ));
+
+    const validityChecks = await Promise.all(validityChecksPromises);
+
+    const allValidFields = validityChecks
+      .every(validity => validity.validField);
+
+    return allValidFields;
   };
 
   const handleCreateOrphanage = async () => {
-    setTimeout(async () => {
-      const readyToSubmit = assessFieldsValidity();
-      if (!readyToSubmit) {
-        return;
-      }
+    const readyToSubmit = await assessValidityOfAllFields();
+    if (!readyToSubmit) return;
 
-      const { latitude, longitude } = position;
+    const { latitude, longitude } = position;
 
-      const data = new FormData();
+    const data = new FormData();
+    data.append('name', name.trim());
+    data.append('about', about.trim());
+    data.append('whatsapp', whatsapp.trim());
+    data.append('latitude', String(latitude));
+    data.append('longitude', String(longitude));
+    data.append('instructions', instructions.trim());
+    data.append('opening_hours', openingHours.trim());
+    data.append('open_on_weekends', String(openOnWeekends));
 
-      data.append('name', name);
-      data.append('about', about);
-      data.append('whatsapp', whatsapp);
-      data.append('latitude', String(latitude));
-      data.append('longitude', String(longitude));
-      data.append('instructions', instructions);
-      data.append('opening_hours', openingHours);
-      data.append('open_on_weekends', String(openOnWeekends));
+    images.forEach((image, index) => {
+      data.append('images', {
+        name: `image_${index}.jpg`,
+        type: 'image/jpg',
+        uri: image,
+      } as any);
+    });
 
-      images.forEach((image, index) => {
-        data.append('images', {
-          name: `image_${index}.jpg`,
-          type: 'image/jpg',
-          uri: image,
-        } as any);
-      });
+    await api.post('/orphanages', data);
 
-      await api.post('/orphanages', data);
+    alert('Cadastro realizado com sucesso!');
 
-      alert('Cadastro realizado com sucesso!');
-      navigation.navigate('OrphanagesMap');
-    }, 500);
+    navigation.navigate('OrphanagesMap');
   };
 
   return (
@@ -229,7 +231,10 @@ function OrphanageData() {
       <TextInput
         style={styles.input}
         value={name}
-        onChangeText={text => setName(text)}
+        onChangeText={text => {
+          setName(text);
+          handleFieldChange('name');
+        }}
         onBlur={() => handleBlur('name', name)}
       />
 
@@ -253,7 +258,10 @@ function OrphanageData() {
         style={[styles.input, { height: 110 }]}
         multiline
         value={about}
-        onChangeText={text => setAbout(text)}
+        onChangeText={text => {
+          setAbout(text);
+          handleFieldChange('about');
+        }}
         onBlur={() => handleBlur('about', about)}
       />
 
@@ -276,7 +284,10 @@ function OrphanageData() {
       <TextInput
         style={styles.input}
         value={whatsapp}
-        onChangeText={text => setWhatsapp(text)}
+        onChangeText={text => {
+          setWhatsapp(text);
+          handleFieldChange('whatsapp');
+        }}
         onBlur={() => handleBlur('whatsapp', whatsapp)}
       />
 
@@ -334,7 +345,10 @@ function OrphanageData() {
         style={[styles.input, { height: 110 }]}
         multiline
         value={instructions}
-        onChangeText={text => setInstructions(text)}
+        onChangeText={text => {
+          setInstructions(text);
+          handleFieldChange('instructions');
+        }}
         onBlur={() => handleBlur('instructions', instructions)}
       />
 
@@ -357,7 +371,10 @@ function OrphanageData() {
       <TextInput
         style={styles.input}
         value={openingHours}
-        onChangeText={text => setOpeningHours(text)}
+        onChangeText={text => {
+          setOpeningHours(text);
+          handleFieldChange('openingHours');
+        }}
         onBlur={() => handleBlur('openingHours', openingHours)}
       />
 
