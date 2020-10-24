@@ -7,35 +7,36 @@ import { LeafletMouseEvent } from 'leaflet';
 import { FiPlus, FiInfo } from 'react-icons/fi';
 
 import api from '../services/api';
+
+import { validateCreateOrphanage as validate } from '../utils/validation';
 import {
-  validate,
-  ValidationField
-} from '../utils/validation/CreateOrphanageValidation';
+  FieldToValidate,
+  FieldValue,
+} from '../utils/validation/CreateOrphanage/types';
+import { ValidationStatus } from '../utils/validation/types';
+import { Position } from '../types';
+
 import Sidebar from '../components/Sidebar';
 import mapMarker from '../resources/mapMarker';
 import '../styles/pages/CreateOrphanage.css';
 import TextButton from '../components/TextButton';
 
-/*
-TODO:
-- [] Button to remove selected images
-- [] Store WhatsApp number
-- [] Make openOnWeekends a toggle component
-*/
-
-type ValidationStatus = {
-  valid: boolean;
-  errorMessage?: string;
-};
+type GroupedFields = Array<{
+  field: FieldToValidate;
+  fieldValue: FieldValue;
+}>
 
 type Validation = {
-  [key in ValidationField]: ValidationStatus;
+  [key in FieldToValidate]: ValidationStatus;
 };
 
 function CreateOrphanage() {
   const history = useHistory();
 
-  const [position, setPosition] = useState({ latitude: 0, longitude: 0 });
+  const [position, setPosition] = useState<Position>({
+    latitude: 0,
+    longitude: 0,
+  });
 
   const [name, setName] = useState('');
   const [about, setAbout] = useState('');
@@ -53,128 +54,157 @@ function CreateOrphanage() {
     instructions: { valid: true },
     openingHours: { valid: true },
     position: { valid: true },
-    images: { valid: true }
+    images: { valid: true },
   });
   const [validSubmit, setValidSubmit] = useState(true);
 
   const setValidationStatus = (
-    field: ValidationField,
-    validationStatus: ValidationStatus
+    field: FieldToValidate,
+    validationStatus: ValidationStatus,
   ) => {
     setValidation(previousValidation => {
       const updatedValidation = {
         ...previousValidation,
-        [field]: validationStatus
+        [field]: validationStatus,
       };
 
       return updatedValidation;
     });
   };
 
-  const handleMapClick = (event: LeafletMouseEvent) => {
+  const handleMapClick = async (event: LeafletMouseEvent) => {
     const { lat, lng } = event.latlng;
 
-    setPosition({ latitude: lat, longitude: lng });
-    setValidationStatus('position', { valid: true });
+    const newPosition: Position = {
+      latitude: lat,
+      longitude: lng,
+    };
+
+    setPosition(newPosition);
+
+    const validationStatus = await validate('position', newPosition);
+
+    if (!validSubmit && validationStatus.valid) {
+      setValidSubmit(true);
+    }
+
+    setValidationStatus('position', validationStatus);
   };
 
-  const handleBlur = async (field: ValidationField, fieldValue: string) => {
+  const handleSelectedImages = (event: ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return;
+
+    const selectedImages = Array.from(event.target.files);
+
+    setImages(previousImages => {
+      const updatedImages = [...previousImages, ...selectedImages];
+
+      return updatedImages;
+    });
+
+    const selectedPreviewImages = selectedImages
+      .map(image => URL.createObjectURL(image));
+
+    setPreviewImages(previousPreviewImages => {
+      const updatedPreviewImages = [
+        ...previousPreviewImages,
+        ...selectedPreviewImages,
+      ];
+
+      return updatedPreviewImages;
+    });
+
+    setValidationStatus('images', { valid: true });
+  };
+
+  const assessFieldValidity = async (
+    field: FieldToValidate,
+    fieldValue: FieldValue,
+    options?: { preparingToSubmit: boolean },
+  ) => {
     const validationStatus = await validate(field, fieldValue);
 
     setValidationStatus(field, validationStatus);
+
+    if (options?.preparingToSubmit && !validationStatus.valid) {
+      setValidSubmit(false);
+    }
+
+    return { validField: validationStatus.valid };
+  };
+
+  const handleFieldChange = (field: FieldToValidate) => {
+    setValidationStatus(field, { valid: true });
 
     if (!validSubmit) {
       setValidSubmit(true);
     }
   };
 
-  const everyFieldIsValid = () => Boolean(
-    name && validation.name.valid
-      && about && validation.about.valid
-      && whatsapp && validation.whatsapp.valid
-      && instructions && validation.instructions.valid
-      && openingHours && validation.openingHours.valid
-      && position.latitude !== 0 && position.longitude !== 0
-      && images.length > 0 && validation.images.valid
-  );
+  const handleBlur = (field: FieldToValidate, fieldValue: FieldValue) => {
+    assessFieldValidity(field, fieldValue);
+  };
 
-  const assessFieldsValidity = () => {
-    if (!everyFieldIsValid()) {
-      setValidSubmit(false);
+  const assessValidityOfAllFields = async () => {
+    const fields: GroupedFields = [
+      {
+        field: 'name',
+        fieldValue: name,
+      },
+      {
+        field: 'about',
+        fieldValue: about,
+      },
+      {
+        field: 'whatsapp',
+        fieldValue: whatsapp,
+      },
+      {
+        field: 'instructions',
+        fieldValue: instructions,
+      },
+      {
+        field: 'openingHours',
+        fieldValue: openingHours,
+      },
+      {
+        field: 'position',
+        fieldValue: position,
+      },
+      {
+        field: 'images',
+        fieldValue: images,
+      },
+    ];
 
-      if (!name) {
-        setValidationStatus('name', {
-          valid: false,
-          errorMessage: 'Este é um campo obrigatório'
-        });
-      }
+    const validityChecksPromises = fields.map(({ field, fieldValue }) => (
+      assessFieldValidity(field, fieldValue, { preparingToSubmit: true })
+    ));
 
-      if (!about) {
-        setValidationStatus('about', {
-          valid: false,
-          errorMessage: 'Este é um campo obrigatório'
-        });
-      }
+    const validityChecks = await Promise.all(validityChecksPromises);
 
-      if (!whatsapp) {
-        setValidationStatus('whatsapp', {
-          valid: false,
-          errorMessage: 'Este é um campo obrigatório'
-        });
-      }
+    const allValidFields = validityChecks
+      .every(validity => validity.validField);
 
-      if (!instructions) {
-        setValidationStatus('instructions', {
-          valid: false,
-          errorMessage: 'Este é um campo obrigatório'
-        });
-      }
-
-      if (!openingHours) {
-        setValidationStatus('openingHours', {
-          valid: false,
-          errorMessage: 'Este é um campo obrigatório'
-        });
-      }
-
-      if (position.latitude === 0 && position.longitude === 0) {
-        setValidationStatus('position', {
-          valid: false,
-          errorMessage: 'Selecione a localização do orfanato no mapa'
-        });
-      }
-
-      if (images.length === 0) {
-        setValidationStatus('images', {
-          valid: false,
-          errorMessage: 'Envie pelo menos uma imagem para facilitar a identificação'
-        });
-      }
-
-      return false;
-    }
-
-    return true;
+    return allValidFields;
   };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
-    const readyToSubmit = assessFieldsValidity();
-    if (!readyToSubmit) {
-      return;
-    }
+    const readyToSubmit = await assessValidityOfAllFields();
+    if (!readyToSubmit) return;
 
     const { latitude, longitude } = position;
 
     const data = new FormData();
-    data.append('name', name);
-    data.append('about', about);
-    data.append('whatsapp', whatsapp);
+    data.append('name', name.trim());
+    data.append('about', about.trim());
+    data.append('whatsapp', whatsapp.trim());
     data.append('latitude', String(latitude));
     data.append('longitude', String(longitude));
-    data.append('instructions', instructions);
-    data.append('opening_hours', openingHours);
+    data.append('instructions', instructions.trim());
+    data.append('opening_hours', openingHours.trim());
     data.append('open_on_weekends', String(openOnWeekends));
 
     images.forEach(image => {
@@ -184,20 +214,6 @@ function CreateOrphanage() {
     await api.post('orphanages', data);
 
     history.push('/orphanages/create/success', { orphanageCreated: true });
-  };
-
-  const handleSelectedImages = (event: ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files) {
-      return;
-    }
-
-    const selectedImages = Array.from(event.target.files);
-    setImages(selectedImages);
-
-    const selectedPreviewImages = selectedImages.map(image => URL.createObjectURL(image));
-    setPreviewImages(selectedPreviewImages);
-
-    setValidationStatus('images', { valid: true });
   };
 
   return (
@@ -250,7 +266,10 @@ function CreateOrphanage() {
                 type="text"
                 id="name"
                 value={name}
-                onChange={e => { setName(e.target.value); }}
+                onChange={e => {
+                  setName(e.target.value);
+                  handleFieldChange('name');
+                }}
                 onBlur={() => { handleBlur('name', name); }}
               />
             </div>
@@ -274,7 +293,10 @@ function CreateOrphanage() {
                 id="about"
                 maxLength={300}
                 value={about}
-                onChange={e => { setAbout(e.target.value); }}
+                onChange={e => {
+                  setAbout(e.target.value);
+                  handleFieldChange('about');
+                }}
                 onBlur={() => { handleBlur('about', about); }}
               />
             </div>
@@ -294,7 +316,10 @@ function CreateOrphanage() {
                 type="text"
                 id="whatsapp"
                 value={whatsapp}
-                onChange={e => { setWhatsapp(e.target.value); }}
+                onChange={e => {
+                  setWhatsapp(e.target.value);
+                  handleFieldChange('whatsapp');
+                }}
                 onBlur={() => { handleBlur('whatsapp', whatsapp); }}
               />
             </div>
@@ -333,7 +358,10 @@ function CreateOrphanage() {
                 type="file"
                 multiple
                 id="images[]"
-                onChange={handleSelectedImages}
+                onChange={(e) => {
+                  handleSelectedImages(e);
+                  handleFieldChange('images');
+                }}
               />
             </div>
           </fieldset>
@@ -356,7 +384,10 @@ function CreateOrphanage() {
                 name="instructions"
                 id="instructions"
                 value={instructions}
-                onChange={e => { setInstructions(e.target.value); }}
+                onChange={e => {
+                  setInstructions(e.target.value);
+                  handleFieldChange('instructions');
+                }}
                 onBlur={() => { handleBlur('instructions', instructions); }}
               />
             </div>
@@ -376,7 +407,10 @@ function CreateOrphanage() {
                 name="opening_hours"
                 id="openingHours"
                 value={openingHours}
-                onChange={e => { setOpeningHours(e.target.value); }}
+                onChange={e => {
+                  setOpeningHours(e.target.value);
+                  handleFieldChange('openingHours');
+                }}
                 onBlur={() => { handleBlur('openingHours', openingHours); }}
               />
             </div>
@@ -423,3 +457,9 @@ function CreateOrphanage() {
 }
 
 export default CreateOrphanage;
+
+/*
+TODO:
+- [] Button to remove selected images
+- [] Make openOnWeekends a toggle component
+*/
