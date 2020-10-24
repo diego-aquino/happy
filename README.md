@@ -5,8 +5,6 @@
   Visit orphanages and bring joy to eager-for-love children
 </p>
 
----
-
 <p align="center">
     <a href="https://github.com/diego-aquino">
         <img alt="Author: Diego Aquino" src="https://img.shields.io/badge/author-Diego%20Aquino-FFD666">
