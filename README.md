@@ -36,7 +36,7 @@
 
 > ***Extras:***
   - Support to contact orphanages directly via **Whatsapp**
-  - **Validation** on orphanages registration (to ensure that all entered fields are valid)
+  - **Validation** on orphanages registration fields (with custom messages such as "Please, provide a valid Whatsapp number")
 
 ## :gear: Technologies
 
