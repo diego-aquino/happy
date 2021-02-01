@@ -96,14 +96,13 @@ With the backend running, you can also start the Mobile version. To do that, ope
 
 1. Access `/mobile` and install its dependencies
     ```bash
-    cd web
+    cd mobile
     yarn
     ```
 2. Install `expo-cli` globally
     ```bash
     yarn global add expo-cli
     ```
-
 3. Initiate the Expo server
     ```bash
     yarn start
