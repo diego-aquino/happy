@@ -24,7 +24,11 @@
     <a href="#handshake-acknowledgments">Acknowledgments</a>
 </p>
 
-<!-- <img alt="Demonstration Gif" src=".github/demo.gif"> -->
+<p align="center">
+<img alt="Happy on Desktop" src="./.github/desktop.png" width="600" align="top">
+&nbsp;&nbsp;&nbsp;
+<img alt="Happy on Mobile" src="./.github/mobile.png" width="193" align="center">
+</p>
 
 ## :rocket: Features
 
