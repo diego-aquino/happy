@@ -28,22 +28,22 @@
 
 ## :rocket: Features
 
-- Welcoming **landing page**
-- In-app, realtime, and interactive **map**
-- **Registration of orphanages**, with support to details such as name and opening hours, images and location (selected directly from the in-app map)
-- **Orphanage details** page, showing information about the organization and instructions for visitors
-- **Web** and **Mobile** versions
+- Welcoming landing page.
+- In-app, realtime, and interactive map.
+- Registration of orphanages, with support to details such as name, opening hours, images and location (selected directly from an in-app map).
+- Orphanage details page, showing information about the organization and instructions for visitors.
+- Web and Mobile versions.
 
-> ***Extras:***
-  - Support to contact orphanages directly via **Whatsapp**
-  - **Validation** on orphanages registration fields (with custom messages such as "Please, provide a valid Whatsapp number")
+> Extras
+  - Support to contact orphanages directly via Whatsapp.
+  - Validation on orphanages registration fields (with custom messages such as "Please, provide a valid Whatsapp number").
 
 ## :gear: Technologies
 
 The main technologies used in this project are the following:
 
-- [**TypeScript**](https://www.typescriptlang.org/)
-- [ReactJS](https://reactjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [React](https://reactjs.org/)
 - [React Native](https://reactnative.dev/) + [Expo](https://expo.io/)
 - [Node.js](https://nodejs.org/en/) + [SQLite3](https://www.npmjs.com/package/sqlite3)
 
